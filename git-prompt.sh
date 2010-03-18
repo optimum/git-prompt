@@ -377,8 +377,7 @@ parse_hg_status() {
         
         [[ -z $modified ]]   &&   [[ -z $untracked ]]   &&   [[ -z $added ]]   &&   clean=clean
         vcs_info=${branch/default/D}
- }
-
+}
 
 parse_git_complete() {
         if [ "${BASH_VERSION%.*}" \< "3.0" ]; then
@@ -388,15 +387,19 @@ parse_git_complete() {
                 return
         fi
 
-        complete -f -W "$(
-                echo `git branch -a | sed -e s/[\ \*]//g | cut -f 1 -d ' ' | uniq`; \
-                echo `git remote | sed -e s/[\ \*]//g | cut -f 1 -d ' ' | uniq`; \
-                echo `git | tail -23 | head -21 | cut -d ' ' -f 4`; \
-                echo '--help'; \
-                echo '--staged'; \
-                echo 'remote'; \
-                echo 'help'; \
-        )" g git
+        git_completion_path=$(whereis bash_completion.d | \
+        grep bash_completion.d | sed 's#.* ##g')
+
+        git_completion_script="$git_completion_path/git"
+
+        if [[ -r "$git_completion_script" ]]; then
+                . "$git_completion_script"
+        else
+                git_completion_script_local="git-completion.sh"
+
+                # cp $git_completion_script_local ~/.$git_completion_script_local
+                [[ -r "~/.$git_completion_script_local" ]] && . $git_completion_script_local
+        fi
 }
 
 parse_git_status() {
